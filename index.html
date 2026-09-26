@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0b5d3b">
+<meta name="description" content="حاسبة الطاقة الشمسية الذكية لتصميم أنظمة الطاقة الشمسية">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="حاسبة الطاقة الشمسية">
+<title>حاسبة الطاقة الشمسية الذكية</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="hero">
+  <div class="brand">
+    <div class="logo">☀️</div>
+    <div>
+      <h1>حاسبة الطاقة الشمسية الذكية</h1>
+      <p>تصميم وتطوير المهندس أبو كرمان</p>
+    </div>
+  </div>
+  <div class="hero-badge">⚡ تصميم احترافي لأنظمة الطاقة الشمسية</div>
+</header>
+
+<nav class="tabs">
+  <a href="#home">🏠 الرئيسية</a>
+  <a href="#site">📍 الموقع والنظام</a>
+  <a href="#loads">💡 الأحمال</a>
+  <a href="#solar">☀️ الألواح</a>
+  <a href="#battery">🔋 البطارية</a>
+  <a href="#inverter">〰️ الإنفرتر</a>
+  <a href="#results">📊 النتائج</a>
+</nav>
+
+<main id="home">
+
+<section class="card" id="site">
+  <h2>📍 بيانات الموقع والنظام</h2>
+  <div class="grid">
+    <label>موقعك
+      <select id="location">
+        <option>اليمن</option><option>السعودية</option><option>عُمان</option><option>الإمارات</option>
+      </select>
+    </label>
+    <label>متوسط ساعات الشمس الفعلية
+      <input id="sunHours" type="number" value="5.5" min="1" step="0.1">
+    </label>
+    <label>جهد النظام
+      <select id="systemVoltage">
+        <option value="12">12 فولت</option>
+        <option value="24" selected>24 فولت</option>
+        <option value="48">48 فولت</option>
+      </select>
+    </label>
+    <label>نوع النظام
+      <select id="systemType">
+        <option value="offgrid">نظام مستقل (Off Grid)</option>
+        <option value="hybrid">نظام هجين (Hybrid)</option>
+        <option value="ongrid">مرتبط بالشبكة (On Grid)</option>
+      </select>
+    </label>
+    <label>معامل الفقد والأمان
+      <input id="lossFactor" type="number" value="1.25" min="1" step="0.01">
+    </label>
+  </div>
+</section>
+
+<section class="card" id="loads">
+  <h2>💡 الأحمال اليومية</h2>
+  <div class="table-wrap">
+    <table id="loadsTable">
+      <thead>
+        <tr><th>الجهاز</th><th>القدرة W</th><th>العدد</th><th>Duty %</th><th>ساعات النهار</th><th>ساعات الليل</th><th>الطاقة Wh/day</th><th>إجراء</th></tr>
+      </thead>
+      <tbody id="loadsBody"></tbody>
+    </table>
+  </div>
+  <button class="btn secondary" onclick="addLoad()">＋ إضافة حمل جديد</button>
+  <div class="total-box">إجمالي الاستهلاك اليومي: <strong id="dailyTotal">0</strong> وات.ساعة / يوم</div>
+
+  <div class="calculation-flow">
+    <div class="flow-title">🔋 مسار حساب البطارية</div>
+    <div class="flow-line"><span>💡 الأحمال</span><b>→</b><span>الطاقة اليومية Wh/day</span><b>→</b><span>الطاقة بعد الفقد</span><b>→</b><span>البطارية حسب 12V / 24V / 48V</span></div>
+    <div class="flow-title ac-flow-title">🛡️ مسار حساب القواطع والكابل</div>
+    <div class="flow-line"><span>⚡ الأحمال اللحظية</span><b>→</b><span>القدرة W</span><b>→</b><span>التيار A</span><b>→</b><span>القاطع والكابل</span></div>
+    <p class="flow-note">مهم: ساعات التشغيل وDuty تؤثر في الطاقة اليومية والبطارية والألواح، لكنها لا تُنقص الحمل اللحظي الذي يُستخدم لحساب تيار القاطع.</p>
+  </div>
+</section>
+
+<section class="card" id="solar">
+  <h2>☀️ بيانات الألواح الشمسية — VMP / VOC / IMP / ISC</h2>
+  <div class="grid">
+    <label>نوع/بيانات اللوح الجاهزة
+      <select id="panelPreset"></select>
+    </label>
+    <label>قدرة اللوح W
+      <input id="panelPower" type="number" value="700" min="1">
+    </label>
+    <label>VMP — جهد نقطة القدرة العظمى (V)
+      <input id="panelVmp" type="number" value="41" min="1" step="0.1">
+    </label>
+    <label>VOC — جهد الدائرة المفتوحة (V)
+      <input id="panelVoc" type="number" value="49" min="1" step="0.1">
+    </label>
+    <label>IMP — تيار نقطة القدرة العظمى (A)
+      <input id="panelImp" type="number" value="17.1" min="0.1" step="0.1">
+    </label>
+    <label>ISC — تيار القصر (A)
+      <input id="panelIsc" type="number" value="18" min="0.1" step="0.1">
+    </label>
+    <label>درجة الحرارة / المناخ
+      <select id="climateFactor">
+        <option value="1">معتدل</option>
+        <option value="0.95" selected>حار</option>
+        <option value="0.9">حار جدًا</option>
+      </select>
+    </label>
+  </div>
+  <div class="panel-reference-table">
+    <h3>📋 جدول الألواح القياسي (STC)</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>القدرة</th><th>Vmp</th><th>Voc</th><th>Imp</th><th>Isc</th></tr></thead>
+        <tbody>
+          <tr><td>150W</td><td>18.0V</td><td>22.1V</td><td>8.33A</td><td>8.84A</td></tr>
+          <tr><td>250W</td><td>30.5V</td><td>37.5V</td><td>8.20A</td><td>8.80A</td></tr>
+          <tr><td>500W</td><td>38.4V</td><td>45.6V</td><td>13.02A</td><td>13.75A</td></tr>
+          <tr><td><strong>680W</strong></td><td><strong>39.1V</strong></td><td><strong>46.8V</strong></td><td><strong>17.39A</strong></td><td><strong>18.42A</strong></td></tr>
+          <tr><td>700W</td><td>41.0V</td><td>49.0V</td><td>17.10A</td><td>18.00A</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small-note">القيم المدخلة مرجعية حسب البيانات التي زوّد بها المستخدم، ويجب مطابقتها مع ملصق اللوح الفعلي قبل التصميم النهائي.</p>
+  </div>
+</section>
+
+<section class="card" id="connection">
+  <h2>🔗 التوصيل التلقائي للألواح</h2>
+  <div class="auto-note">
+    <strong>🤖 البرنامج يختار طريقة التوصيل من نفسه</strong>
+    <span>يحسب عدد الألواح المطلوب، ثم يختار التوالي المناسب، وبعده التوازي، مع فحص VMP وVOC وIMP وISC وقدرة PV القصوى للـMPPT، ويقرر تلقائيًا: <b>توالي سلسلة واحدة</b> أو <b>توالي + توازي</b>.</span>
+  </div>
+  <div class="grid">
+    <label>التوصيل المقترح تلقائيًا
+      <input id="connectionType" value="يتم الحساب تلقائيًا" readonly>
+    </label>
+    <label>الألواح على التوالي S<input id="seriesPanels" readonly></label>
+    <label>السلاسل على التوازي P<input id="parallelStrings" readonly></label>
+    <label>عدد الألواح الفعلي<input id="actualPanelCount" readonly></label>
+  </div>
+  <div id="autoConnectionStatus" class="status"></div>
+  <button class="btn primary" onclick="calculateAll()">🤖 احسب التوصيل تلقائيًا</button>
+</section>
+
+<section class="card">
+  <h2>📊 نتيجة المصفوفة الشمسية</h2>
+  <div class="result-grid">
+    <div><span>عدد الألواح</span><strong id="resultCount">-</strong></div>
+    <div><span>القدرة الكلية</span><strong id="resultPower">-</strong></div>
+    <div><span>Vmp للمصفوفة</span><strong id="resultVmp">-</strong></div>
+    <div><span>Voc للمصفوفة</span><strong id="resultVoc">-</strong></div>
+    <div><span>Imp للمصفوفة</span><strong id="resultImp">-</strong></div>
+    <div><span>Isc للمصفوفة</span><strong id="resultIsc">-</strong></div>
+  </div>
+  <div id="mpptStatus" class="status"></div>
+</section>
+
+<section class="card">
+  <h2>🖼️ مخطط توصيل الألواح</h2>
+  <div id="solarDiagram" class="diagram"></div>
+</section>
+
+<section class="card" id="battery">
+  <h2>🔋 بيانات البطارية وحساب السعة</h2>
+  <div class="grid">
+    <label>نوع البطارية
+      <select id="batteryType"><option>LiFePO4</option><option>Gel</option><option>AGM</option><option>Lead Acid</option></select>
+    </label>
+    <label>بطارية النظام المتاحة
+      <select id="batteryPreset"></select>
+    </label>
+    <label>جهد البطارية V<input id="batteryVoltage" type="number" value="24" readonly></label>
+    <label>سعة البطارية Ah<input id="batteryAh" type="number" value="100" readonly></label>
+    <label>الطاقة الاسمية للبطارية<input id="batteryNominalKwh" type="text" value="2.4 kWh" readonly></label>
+    <label>عدد البطاريات المطلوب<input id="batteryCount" type="number" value="1" min="1" readonly></label>
+    <label>توصيل البطاريات S×P<input id="batteryConnection" type="text" value="—" readonly></label>
+    <label>بطاريات على التوالي S<input id="batterySeries" type="number" value="—" readonly></label>
+    <label>بطاريات على التوازي P<input id="batteryParallel" type="number" value="—" readonly></label>
+    <label>العمق المسموح بالتفريغ DOD %<input id="batteryDod" type="number" value="80" min="1" max="100"></label>
+    <label>كفاءة البطارية %<input id="batteryEfficiency" type="number" value="90" min="1" max="100"></label>
+    <label>نسبة الاحتياطي المطلوبة %<input id="batteryReserve" type="number" value="20" min="0" max="80"></label>
+  </div>
+</section>
+
+<section class="card" id="chargeTime">
+  <h2>⏱️ حساب زمن شحن البطارية</h2>
+  <div class="grid">
+    <label>نسبة الشحن الحالية %<input id="chargeCurrentSoc" type="number" value="20" min="0" max="100" step="1"></label>
+    <label>نسبة الشحن المطلوبة %<input id="chargeTargetSoc" type="number" value="100" min="0" max="100" step="1"></label>
+    <label>كفاءة الشحن %<input id="chargeEfficiency" type="number" value="90" min="50" max="100" step="1"></label>
+    <label>قدرة الشحن المتاحة W
+      <input id="chargePower" type="number" value="0" min="0" step="10">
+      <small>0 = استخدام قدرة المصفوفة الشمسية الآمنة تلقائيًا</small>
+    </label>
+  </div>
+  <div class="result-grid">
+    <div><span>طاقة البطارية الاسمية</span><strong id="chargeNominalWh">0 Wh</strong></div>
+    <div><span>الطاقة المطلوب شحنها</span><strong id="chargeEnergyWh">0 Wh</strong></div>
+    <div><span>قدرة الشحن المستخدمة</span><strong id="chargePowerUsed">0 W</strong></div>
+    <div><span>زمن الشحن المتوقع</span><strong id="chargeTimeHours">0 ساعة</strong></div>
+  </div>
+  <div id="chargeTimeStatus" class="status"></div>
+  <p class="small-note">الحساب تقديري؛ الإنتاج الشمسي يتغير خلال اليوم، وقد يقل تيار الشحن قرب امتلاء البطارية أو بسبب الحرارة والظروف الفعلية.</p>
+</section>
+
+<section class="card" id="inverter">
+  <h2>〰️ بيانات الإنفرتر — قدرة الخرج منفصلة عن قدرة PV</h2>
+  <div class="grid">
+    <label>قدرة الإنفرتر W<input id="inverterPower" type="number" value="4000"></label>
+    <label>جهد النظام<input id="inverterSystemVoltage" type="number" value="24"></label>
+    <label>جهد التشغيل V<input id="inverterOperatingVoltage" type="number" value="360"></label>
+    <label>الجهد الأعلى Voc<input id="inverterMaxVoltage" type="number" value="500"></label>
+    <label>نطاق MPPT الأدنى V<input id="inverterMpptMin" type="number" value="60"></label>
+    <label>نطاق MPPT الأعلى V<input id="inverterMpptMax" type="number" value="450"></label>
+    <label>أقصى تيار PV A<input id="inverterPvCurrent" type="number" value="18"></label>
+    <label>أقصى قدرة PV للـMPPT W<input id="inverterMaxPvPower" type="number" value="7000"></label>
+  </div>
+  <div id="inverterStatus" class="status"></div>
+  <div id="inverterCapacityStatus" class="status"></div>
+</section>
+
+<section class="card">
+  <h2>⚡ بيانات منظم الشحن</h2>
+  <div class="grid">
+    <label>نوع المنظم<select id="controllerType"><option>MPPT</option><option>PWM</option></select></label>
+    <label>جهد النظام<select id="panelVoltage"><option>12</option><option selected>24</option><option>48</option></select></label>
+    <label>أقل جهد تشغيل MPPT<input id="mpptMinVmp" type="number" value="30"></label>
+    <label>أعلى جهد تشغيل MPPT<input id="mpptMaxVmp" type="number" value="240"></label>
+    <label>أقصى جهد Voc<input id="mpptMaxVoc" type="number" value="400"></label>
+    <label>أقصى تيار للمنظم<input id="controllerCurrent" type="number" value="100"></label>
+    <label>أقصى قدرة PV للمنظم W<input id="controllerMaxPvPower" type="number" value="7000"></label>
+  </div>
+</section>
+
+<section class="card">
+  <h2>🛡️ حماية المصفوفة الشمسية</h2>
+  <div class="grid">
+    <label>معامل الأمان<input id="safetyFactor" type="number" value="1.25" step="0.01"></label>
+    <label>أقصى فيوز للوح<input id="panelMaxFuse" type="number" value="20"></label>
+  </div>
+  <div class="result-grid">
+    <div><span>Isc للسلسلة</span><strong id="stringIsc">-</strong></div>
+    <div><span>تيار التصميم للسلسلة</span><strong id="stringDesignCurrent">-</strong></div>
+    <div><span>فيوز السلسلة</span><strong id="stringFuse">-</strong></div>
+    <div><span>Isc للمصفوفة</span><strong id="arrayIscProtection">-</strong></div>
+    <div><span>تيار التصميم</span><strong id="arrayDesignCurrent">-</strong></div>
+    <div><span>القاطع الرئيسي DC</span><strong id="mainDcBreaker">-</strong></div>
+    <div><span>SPD المقترح</span><strong id="spdVoltage">-</strong></div>
+  </div>
+  <div id="protectionWarning" class="warning"></div>
+</section>
+
+<section class="card" id="acProtection">
+  <h2>🛡️ قواطع وحماية الأحمال AC</h2>
+  <div class="grid">
+    <label>جهد AC V<input id="acVoltage" type="number" value="230" min="1" step="1"></label>
+    <label>معامل القدرة PF<input id="acPowerFactor" type="number" value="1" min="0.5" max="1" step="0.01"></label>
+    <label>معامل أمان القاطع<input id="acSafetyFactor" type="number" value="1.25" min="1" step="0.01"></label>
+    <label>طول كابل الحمل متر<input id="acCableLength" type="number" value="10" min="0" step="1"></label>
+    <label>هبوط الجهد الأقصى %<input id="acMaxVoltageDrop" type="number" value="3" min="0.1" step="0.1"></label>
+    <label>مادة كابل الحمل<select id="acCableMaterial"><option value="copper">نحاس</option><option value="aluminum">ألمنيوم</option></select></label>
+  </div>
+  <div class="result-grid">
+    <div><span>قدرة الحمل اللحظية</span><strong id="acLoadPower">-</strong></div>
+    <div><span>تيار الحمل</span><strong id="acLoadCurrent">-</strong></div>
+    <div><span>تيار التصميم</span><strong id="acDesignCurrent">-</strong></div>
+    <div><span>القاطع الرئيسي AC</span><strong id="acMainBreaker">-</strong></div>
+    <div><span>الكابل المقترح</span><strong id="acSuggestedCable">-</strong></div>
+    <div><span>هبوط الجهد</span><strong id="acVoltageDrop">-</strong></div>
+  </div>
+  <div id="acProtectionStatus" class="status"></div>
+  <div id="acProtectionWarning" class="warning"></div>
+</section>
+
+<section class="card">
+  <h2>🔌 حساب كابل الألواح</h2>
+  <div class="grid">
+    <label>طول الكابل متر<input id="cableLength" type="number" value="10"></label>
+    <label>أقصى هبوط جهد %<input id="maxVoltageDrop" type="number" value="3"></label>
+    <label>مادة الكابل<select id="cableMaterial"><option value="copper">نحاس</option><option value="aluminum">ألمنيوم</option></select></label>
+    <label>مقطع الكابل mm²
+      <select id="cableSize"><option>2.5</option><option>4</option><option selected>6</option><option>10</option><option>16</option><option>25</option><option>35</option><option>50</option><option>70</option></select>
+    </label>
+  </div>
+  <button class="btn primary" onclick="calculateCable()">🔌 احسب الكابل</button>
+  <div class="result-grid">
+    <div><span>التيار</span><strong id="cableCurrent">-</strong></div>
+    <div><span>الجهد</span><strong id="cableVoltage">-</strong></div>
+    <div><span>هبوط الجهد</span><strong id="voltageDrop">-</strong></div>
+    <div><span>نسبة الهبوط</span><strong id="voltageDropPercent">-</strong></div>
+    <div><span>الكابل المختار</span><strong id="selectedCable">-</strong></div>
+  </div>
+  <div id="cableStatus" class="status"></div>
+  <div id="cableWarning" class="warning"></div>
+</section>
+
+<section class="card" id="results">
+  <h2>📋 ملخص النتائج</h2>
+  <div class="summary-grid">
+    <div class="summary-card purple"><span>إجمالي الاستهلاك اليومي</span><strong id="summaryDaily">0</strong><small>وات.ساعة / يوم</small></div>
+    <div class="summary-card blue"><span>الطاقة مع الفقد</span><strong id="summaryWithLoss">0</strong><small>وات.ساعة / يوم</small></div>
+    <div class="summary-card green"><span>قدرة الألواح المطلوبة</span><strong id="requiredSolar">0</strong><small>كيلوواط</small></div>
+    <div class="summary-card orange"><span>عدد الألواح المقترح</span><strong id="suggestedPanels">0</strong><small>لوح</small></div>
+    <div class="summary-card teal"><span>طاقة البطارية المطلوبة</span><strong id="requiredBatteryWh">0</strong><small>Wh</small></div>
+    <div class="summary-card teal"><span>سعة البطارية المطلوبة</span><strong id="requiredBatteryAh">0</strong><small>Ah</small></div>
+    <div class="summary-card yellow"><span>قدرة الإنفرتر المقترحة</span><strong id="suggestedInverter">0</strong><small>واط</small></div>
+  </div>
+
+  <h3>🔋 تفاصيل سعة البطارية</h3>
+  <div class="details">
+    <p>الطاقة اليومية من الأحمال: <strong id="detailUsableEnergy">0</strong> Wh/day</p>
+    <p>الطاقة المطلوبة من البطارية بعد الفقد وDOD والكفاءة والاحتياطي: <strong id="detailBatteryWh">0</strong> Wh</p>
+    <p>الطاقة بعد الفقد للألواح: <strong id="detailEnergy">0</strong> Wh/day</p>
+    <p>جهد النظام: <strong id="detailVoltage">24</strong> V</p>
+    <p>العمق المسموح DOD: <strong id="detailDod">80</strong> %</p>
+    <p>كفاءة البطارية: <strong id="detailEfficiency">90</strong> %</p>
+    <p class="highlight">سعة البطارية المطلوبة: <strong id="detailBattery">0</strong> Ah</p>
+    <p>العدد المطلوب من البطاريات: <strong id="detailBatteryCount">0</strong></p>
+    <p>توصيل البطاريات: <strong id="detailBatteryConnection">—</strong></p>
+    <p>سعة البنك الفعلية: <strong id="detailBankAh">0</strong> Ah</p>
+  </div>
+
+  <div class="actions">
+    <button class="btn primary" onclick="calculateAll()">🔄 إعادة حساب</button>
+    <button class="btn success" onclick="saveResults()">💾 حفظ النتائج</button>
+    <button class="btn info" onclick="loadResults()">📂 تحميل النتائج</button>
+    <button class="btn dark" onclick="window.print()">🖨️ طباعة</button>
+    <button class="btn danger" onclick="exportPDF()">📄 تصدير النتائج PDF</button>
+    <button class="btn secondary" onclick="resetCalculator()">♻️ إعادة الإعدادات</button>
+  </div>
+
+  <p class="note">ℹ️ النتائج تقديرية. التوصيل التلقائي يعتمد على حدود منظم MPPT، ثم يعرض فحصًا مستقلًا لمدخل PV في الإنفرتر. لا تعتمد على الحاسبة وحدها في التنفيذ النهائي.  اختيار القواطع والكابلات والحمايات النهائية يجب أن يعتمد على مواصفات الأجهزة وطريقة التركيب والمعايير المحلية.</p>
+</section>
+
+<section class="card">
+  <h2>🔧 ملخص النظام والتوصيلات</h2>
+  <div id="systemSummary" class="summary-text"></div>
+</section>
+
+</main>
+
+<footer>
+  <strong>حاسبة الطاقة الشمسية الذكية</strong>
+  <span>تصميم وتطوير المهندس أبو كرمان</span>
+</footer>
+
+<script src="script.js"></script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js").catch(console.error);
+  });
+}
+</script>
+</body>
+</html>
